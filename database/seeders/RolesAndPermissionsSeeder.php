@@ -18,7 +18,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage suppliers',
             'manage product categories',
             'manage stock entries',
-            'approve stock entries'
+            'approve stock entries',
+            'manage items' // Thêm quyền quản lý mặt hàng
         ];
 
         foreach ($permissions as $permission) {
@@ -33,7 +34,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage suppliers',
             'manage product categories',
             'manage stock entries',
-            'approve stock entries'
+            'approve stock entries',
+            'manage items' // Thêm quyền quản lý mặt hàng cho quản lý
         ];
         $managerRole = Role::firstOrCreate(['name' => 'manager']);
         $managerRole->syncPermissions($managerPermissions);

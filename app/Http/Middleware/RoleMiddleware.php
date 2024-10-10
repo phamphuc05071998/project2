@@ -21,7 +21,10 @@ class RoleMiddleware
         }
 
         if (!Auth::user()->hasRole($role)) {
-            abort(code: 403, 'Unauthorized');
+
+
+
+            abort( 403,'Unauthorized');
         }
 
         return $next($request);

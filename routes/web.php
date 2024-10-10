@@ -1,11 +1,15 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PostController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\RoleRequestController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\StockEntryController;
+
+// Home route
+// Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // User authentication routes
 Route::get('/login', [UserController::class, 'showLoginForm'])->name('login');
@@ -13,60 +17,65 @@ Route::post('/login', [UserController::class, 'login']);
 Route::get('/register', [UserController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');
-Route::middleware(['role:author|editor|admin'])->group(function () {
-    Route::get('posts/create', [PostController::class, 'create'])->name('posts.create');
-    Route::post('posts', [PostController::class, 'store'])->name('posts.store');
-    Route::get('posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
-    Route::put('posts/{post}', [PostController::class, 'update'])->name('posts.update');
+
+// User management routes (only accessible by admin)
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
-Route::get('posts/approveRequest',  [PostController::class, 'approveRequest'])->name('posts.approveRequest')->middleware('role:admin|editor');
-
-Route::middleware(['role:author'])->group(function () {
-    Route::get('posts/author', [PostController::class, 'authorPosts'])->name('posts.author');
+// Stock entry routes (accessible by employees, managers, and admins)
+Route::middleware(['auth', 'role:employee|manager|admin'])->group(function () {
+    Route::get('/stock-entries', [StockEntryController::class, 'index'])->name('stock-entries.index');
+    Route::get('/stock-entries/create', [StockEntryController::class, 'create'])->name('stock-entries.create');
+    Route::post('/stock-entries', [StockEntryController::class, 'store'])->name('stock-entries.store');
+    Route::get('/stock-entries/{stockEntry}/edit', [StockEntryController::class, 'edit'])->name('stock-entries.edit');
+    Route::put('/stock-entries/{stockEntry}', [StockEntryController::class, 'update'])->name('stock-entries.update');
+    Route::delete('/stock-entries/{stockEntry}', [StockEntryController::class, 'destroy'])->name('stock-entries.destroy');
 });
 
+// Approval routes (accessible only by managers and admins)
+Route::middleware(['auth', 'role:manager|admin'])->group(function () {
+    Route::get('stock-entries/approve', [StockEntryController::class, 'approveIndex'])->name('stock-entries.approve');
+    Route::put('stock-entries/{stockEntry}/approve', [StockEntryController::class, 'approve'])->name('stock-entries.approveactions');
+    // Route::put('/stock-entries/{stockEntry}/approve-create', [StockEntryController::class, 'approveCreate'])->name('stock-entries.approve-create');
+    // Route::put('/stock-entries/{stockEntry}/approve-update', [StockEntryController::class, 'approveUpdate'])->name('stock-entries.approve-update');
+    // Route::put('/stock-entries/{stockEntry}/approve-delete', [StockEntryController::class, 'approveDelete'])->name('stock-entries.approve-delete');
 
-// Public routes
-Route::get('/', [PostController::class, 'index'])->name('home');
+    // Category routes
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-Route::get('posts/{post}', [PostController::class, 'show'])->name('posts.show');
-
-Route::middleware(['role:admin|editor'])->group(function () {
-    Route::get('/category', [CategoryController::class, 'index'])->name('category.index');
-    Route::get('/category/create', [CategoryController::class, 'create'])->name('category.create');
-    Route::post('/category', [CategoryController::class, 'store'])->name('category.store');
-    Route::get('/category/{category}/edit', [CategoryController::class, 'edit'])->name('category.edit');
-    Route::put('/category/{category}', [CategoryController::class, 'update'])->name('category.update');
-    Route::delete('/category/{category}', [CategoryController::class, 'destroy'])->name('category.destroy');
-});
-// Routes for managing posts
-
-
-Route::middleware(['role:editor|admin'])->group(function () {
-    Route::post('posts/{post}/approve', [PostController::class, 'approve'])->name('posts.approve');
-    Route::post('posts/{post}/change-status', [PostController::class, 'changeStatus'])->name('posts.changeStatus');
-    Route::post('posts/{post}/change-category', [PostController::class, 'changeCategory'])->name('posts.changeCategory');
-    Route::post('temp-posts/{tempPost}/approve', [PostController::class, 'approveEdit'])->name('tempPosts.approveEdit');
-
-    Route::post('posts/{tempPost}/approveTempPost', [PostController::class, 'approveTempPost'])->name('posts.approveTempPost');
-    Route::post('posts/{tempPost}/rejectTempPost', [PostController::class, 'rejectTempPost'])->name('posts.rejectTempPost');
-    Route::post('posts/{post}/assignCategory', [PostController::class, 'assignCategory'])->name('posts.assignCategory');
-    Route::post('posts/{tempPost}/confirmDelete', [PostController::class, 'confirmDelete'])->name('posts.confirmDelete');
-    Route::post('posts/{tempPost}/rejectDelete', [PostController::class, 'rejectDelete'])->name('posts.rejectDelete');
+    // Supplier routes
+    Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+    Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
+    Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+    Route::get('/suppliers/{supplier}/edit', [SupplierController::class, 'edit'])->name('suppliers.edit');
+    Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
+    Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
 });
 
-// Routes for role requests
-Route::middleware(['auth'])->group(function () {
-    Route::get('role-requests/create', [RoleRequestController::class, 'create'])->name('roleRequests.create');
-    Route::post('role-requests', [RoleRequestController::class, 'store'])->name('roleRequests.store');
-    Route::delete(('posts/{post}/delete'), [PostController::class, 'deleteRequest'])->name('posts.deleteRequest');
+// Statistics route (accessible only by managers and admins)
+Route::middleware(['auth', 'role:manager|admin'])->group(function () {
+    Route::get('/stock-entries/statistics', [StockEntryController::class, 'statistics'])->name('stock-entries.statistics');
 });
 
-Route::middleware(['role:admin|editor'])->group(function () {
-    Route::get('role-requests', [RoleRequestController::class, 'index'])->name('roleRequests.index');
-    Route::post('role-requests/{roleRequest}/approve', [RoleRequestController::class, 'approve'])->name('roleRequests.approve');
-    Route::post('role-requests/{roleRequest}/reject', [RoleRequestController::class, 'reject'])->name('roleRequests.reject');
+// Item routes (accessible only by managers and admins)
+Route::middleware(['auth', 'role:manager|admin'])->group(function () {
+    Route::get('/items', [ItemController::class, 'index'])->name('items.index');
+    Route::get('/items/create', [ItemController::class, 'create'])->name('items.create');
+    Route::post('/items', [ItemController::class, 'store'])->name('items.store');
+    Route::get('/items/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
+    Route::put('/items/{item}', [ItemController::class, 'update'])->name('items.update');
+    Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 });
 
-Route::resource('posts', PostController::class)->except(['create', 'store', 'edit', 'update'])->middleware('role:author|editor|admin');
+Route::get('/items-by-supplier/{supplierId}', [StockEntryController::class, 'getItemsBySupplier']);

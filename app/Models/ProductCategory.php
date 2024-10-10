@@ -1,18 +1,14 @@
 <?php
-// database/factories/ProductCategoryFactory.php
-namespace Database\Factories;
+// app/Models/ProductCategory.php
 
-use App\Models\ProductCategory;
-use Illuminate\Database\Eloquent\Factories\Factory;
+namespace App\Models;
 
-class ProductCategoryFactory extends Factory
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class ProductCategory extends Model
 {
-    protected $model = ProductCategory::class;
+    use HasFactory;
 
-    public function definition()
-    {
-        return [
-            'name' => $this->faker->word,
-        ];
-    }
+    protected $fillable = ['name'];
 }

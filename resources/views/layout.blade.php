@@ -35,50 +35,71 @@
                     <a class="nav-link" href="{{ url('/') }}">Home <span class="sr-only">(current)</span></a>
                 </li>
                 @auth
-                @if ( auth()->user()->hasRole('editor') || auth()->user()->hasRole('admin'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('roleRequests.index') }}">Manage Roles</a>
-                </li>
-                @endif
-                @if(auth()->user()->hasRole('editor') || auth()->user()->hasRole('admin'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('category.index') }}">Manage Category</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('posts.index') }}">Manage Posts</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('posts.approveRequest') }}">Approve Posts</a>
-                </li>
-                @endif
-                @if(auth()->user()->hasRole('author'))
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('posts.author') }}">My post</a>
-                </li>
-                @endif
-                <li class="nav-item">
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-inline">
-                        @csrf
-                        <button type="submit" class="nav-link block btn btn-link p-0">Logout</button>
-                    </form>
-                </li>
+                    @if (auth()->user()->hasRole('admin'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('users.index') }}">Manage Users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('categories.index') }}">Manage Categories</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('suppliers.index') }}">Manage Suppliers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('items.index') }}">Manage Items</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('stock-entries.statistics') }}">View Statistics</a>
+                        </li>
+                    @endif
+                    @if (auth()->user()->hasRole('manager'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('categories.index') }}">Manage Categories</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('suppliers.index') }}">Manage Suppliers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('items.index') }}">Manage Items</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('stock-entries.statistics') }}">View Statistics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('stock-entries.approve') }}">Approve Stock Entries</a>
+                        </li>
+                    @endif
+                    @if (auth()->user()->hasRole('employee'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('stock-entries.index') }}">View Stock Entries</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('stock-entries.create') }}">Create Stock Entry</a>
+                        </li>
+                    @endif
+                    <li class="nav-item">
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="nav-link block btn btn-link p-0">Logout</button>
+                        </form>
+                    </li>
                 @else
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('login') }}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('register') }}">Register</a>
-                </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('register') }}">Register</a>
+                    </li>
                 @endauth
             </ul>
             @auth
-            @if (!auth()->user()->hasRole('author') && !auth()->user()->hasRole('editor'))
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('roleRequests.create') }}">Request Role Upgrade</a>
-                </li>
-            </ul>
-            @endif
+                @if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('manager') && !auth()->user()->hasRole('employee'))
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route(name: 'roleRequests.create') }}">Request Role Upgrade</a>
+                        </li>
+                    </ul>
+                @endif
             @endauth
         </div>
     </nav>
@@ -86,15 +107,15 @@
     <div class="container mt-4">
         <!-- Flash Message -->
         @if (session('success'))
-        <div class="alert alert-success" id="flash-message">
-            {{ session('success') }}
-        </div>
+            <div class="alert alert-success" id="flash-message">
+                {{ session('success') }}
+            </div>
         @endif
 
         @if (session('error'))
-        <div class="alert alert-danger" id="flash-message">
-            {{ session('error') }}
-        </div>
+            <div class="alert alert-danger" id="flash-message">
+                {{ session('error') }}
+            </div>
         @endif
 
         @yield('content')
