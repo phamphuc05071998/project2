@@ -29,75 +29,61 @@
         </div>
         <div class="form-group">
             <label for="items">Items</label>
-            <div id="items">
-                @foreach($stockEntry->items as $index => $item)
-                    <div class="item mt-2">
-                        <select name="items[{{ $index }}][id]" class="form-control item-select" required>
-                            <option value="">Select Item</option>
-                            @foreach($allItems as $allItem)
-                                <option value="{{ $allItem->id }}" {{ $allItem->id == $item->item_id ? 'selected' : '' }}>
-                                    {{ $allItem->name }} (In Stock: {{ $allItem->quantity }})
-                                </option>
-                            @endforeach
-                        </select>
-                        <input type="number" name="items[{{ $index }}][quantity]" placeholder="Quantity" class="form-control mt-2" required min="1" value="{{ $item->quantity }}">
-                        <button type="button" class="btn btn-danger remove-item mt-2">Remove</button>
+            <div id="items-container">
+                @foreach($selectedItems as $selectedItem)
+                    <div class="input-group mb-3">
+                        <input type="hidden" name="items[{{ $loop->index }}][id]" value="{{ $selectedItem->item_id }}">
+                        <input type="text" class="form-control" value="{{ $selectedItem->item->name }}" readonly>
+                        <input type="number" name="items[{{ $loop->index }}][quantity]" class="form-control" value="{{ $selectedItem->quantity }}" required>
                     </div>
                 @endforeach
             </div>
-            <button type="button" id="add-item" class="btn btn-secondary mt-2">Add Item</button>
         </div>
-        <button type="submit" class="btn btn-primary mt-3">Update Stock Entry</button>
+        <button type="submit" class="btn btn-primary">Update</button>
     </form>
 </div>
 
 <script>
-    document.getElementById('supplier_id').addEventListener('change', function() {
-        var supplierId = this.value;
-        fetch(`/items-by-supplier/${supplierId}`)
+document.getElementById('supplier_id').addEventListener('change', function() {
+    var supplierId = this.value;
+    var itemsContainer = document.getElementById('items-container');
+
+    // Clear current items
+    itemsContainer.innerHTML = '';
+
+    if (supplierId) {
+        fetch(`/stock-entries/items/${supplierId}`)
             .then(response => response.json())
             .then(data => {
-                var itemSelects = document.querySelectorAll('.item-select');
-                itemSelects.forEach(select => {
-                    select.innerHTML = '<option value="">Select Item</option>';
-                    data.forEach(item => {
-                        select.innerHTML += `<option value="${item.id}" data-quantity="${item.quantity}">${item.name} (In Stock: ${item.quantity})</option>`;
-                    });
+                data.forEach((item, index) => {
+                    var itemGroup = document.createElement('div');
+                    itemGroup.className = 'input-group mb-3';
+
+                    var itemIdInput = document.createElement('input');
+                    itemIdInput.type = 'hidden';
+                    itemIdInput.name = `items[${index}][id]`;
+                    itemIdInput.value = item.id;
+
+                    var itemNameInput = document.createElement('input');
+                    itemNameInput.type = 'text';
+                    itemNameInput.className = 'form-control';
+                    itemNameInput.value = item.name;
+                    itemNameInput.readOnly = true;
+
+                    var itemQuantityInput = document.createElement('input');
+                    itemQuantityInput.type = 'number';
+                    itemQuantityInput.name = `items[${index}][quantity]`;
+                    itemQuantityInput.className = 'form-control';
+                    itemQuantityInput.required = true;
+
+                    itemGroup.appendChild(itemIdInput);
+                    itemGroup.appendChild(itemNameInput);
+                    itemGroup.appendChild(itemQuantityInput);
+
+                    itemsContainer.appendChild(itemGroup);
                 });
             });
-    });
-
-    document.getElementById('add-item').addEventListener('click', function() {
-        var itemsDiv = document.getElementById('items');
-        var itemCount = itemsDiv.getElementsByClassName('item').length;
-        var newItemDiv = document.createElement('div');
-        newItemDiv.classList.add('item', 'mt-2');
-        newItemDiv.innerHTML = `
-            <select name="items[${itemCount}][id]" class="form-control item-select" required>
-                <option value="">Select Item</option>
-            </select>
-            <input type="number" name="items[${itemCount}][quantity]" placeholder="Quantity" class="form-control mt-2" required min="1">
-            <button type="button" class="btn btn-danger remove-item mt-2">Remove</button>
-        `;
-        itemsDiv.appendChild(newItemDiv);
-
-        // Fetch items for the new select element
-        var supplierId = document.getElementById('supplier_id').value;
-        fetch(`/items-by-supplier/${supplierId}`)
-            .then(response => response.json())
-            .then(data => {
-                var newItemSelect = newItemDiv.querySelector('.item-select');
-                newItemSelect.innerHTML = '<option value="">Select Item</option>';
-                data.forEach(item => {
-                    newItemSelect.innerHTML += `<option value="${item.id}" data-quantity="${item.quantity}">${item.name} (In Stock: ${item.quantity})</option>`;
-                });
-            });
-    });
-
-    document.addEventListener('click', function (e) {
-        if (e.target && e.target.classList.contains('remove-item')) {
-            e.target.parentElement.remove();
-        }
-    });
+    }
+});
 </script>
 @endsection

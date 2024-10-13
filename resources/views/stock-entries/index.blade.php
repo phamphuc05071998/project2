@@ -2,111 +2,194 @@
 @extends('layout')
 
 @section('content')
-    <div class="container">
-        <h1>Stock Entries</h1>
-        <a href="{{ route('stock-entries.create') }}" class="btn btn-primary mb-3">Create Stock Entry</a>
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+<div class="container">
+    <h1>Stock Entries</h1>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
 
-        <!-- Pending Entries -->
-        <h2>Pending Entries</h2>
-        <table class="table table-bordered">
-            <thead>
+    <h2>Pending Stock Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($pendingEntries as $entry)
                 <tr>
-                    <th>Supplier</th>
-                    <th>Items</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <a href="{{ route('stock-entries.edit', $entry->id) }}" class="btn btn-primary">Edit</a>
+                        <form action="{{ route('stock-entries.destroy', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                        <form action="{{ route('stock-entries.requestApproval', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-success">Request Approval</button>
+                        </form>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($pendingEntries as $stockEntry)
-                    <tr>
-                        <td>{{ $stockEntry->supplier->name }}</td>
-                        <td>
-                            <ul>
-                                @foreach ($stockEntry->items as $item)
-                                    <li>{{ $item->item->name }} ({{ $item->quantity }})</li>
-                                @endforeach
-                            </ul>
-                        </td>
-                        <td>{{ ucfirst($stockEntry->status) }}</td>
-                        <td>
-                            <a href="{{ route('stock-entries.edit', $stockEntry->id) }}" class="btn btn-warning">Edit</a>
-                            <form action="{{ route('stock-entries.destroy', $stockEntry->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('delete')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to request deletion of this stock entry?')">Request Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+            @endforeach
+        </tbody>
+    </table>
 
-        <!-- Waiting Approved Edit Entries -->
-        <h2>Waiting Approved Edit Entries</h2>
-        <table class="table table-bordered">
-            <thead>
+    <h2>Waiting Approved Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($waitingApprovedEntries as $entry)
                 <tr>
-                    <th>Supplier</th>
-                    <th>Items</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <span class="badge badge-warning">Pending Approval</span>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($waitingApprovedEditEntries as $stockEntry)
-                    <tr>
-                        <td>{{ $stockEntry->supplier->name }}</td>
-                        <td>
-                            <ul>
-                                @foreach ($stockEntry->items as $item)
-                                    <li>{{ $item->item->name }} ({{ $item->quantity }})</li>
-                                @endforeach
-                            </ul>
-                        </td>
-                        <td>{{ ucfirst($stockEntry->status) }}</td>
-                        <td>
-                            <span class="text-muted">No actions available</span>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+            @endforeach
+        </tbody>
+    </table>
 
-        <!-- Waiting Approved Delete Entries -->
-        <h2>Waiting Approved Delete Entries</h2>
-        <table class="table table-bordered">
-            <thead>
+    <h2>Waiting Approved Edit Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($waitingApprovedEditEntries as $entry)
                 <tr>
-                    <th>Supplier</th>
-                    <th>Items</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <span class="badge badge-warning">Pending Approval</span>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($waitingApprovedDeleteEntries as $stockEntry)
-                    <tr>
-                        <td>{{ $stockEntry->supplier->name }}</td>
-                        <td>
-                            <ul>
-                                @foreach ($stockEntry->items as $item)
-                                    <li>{{ $item->item->name }} ({{ $item->quantity }})</li>
-                                @endforeach
-                            </ul>
-                        </td>
-                        <td>{{ ucfirst($stockEntry->status) }}</td>
-                        <td>
-                            <span class="text-muted">No actions available</span>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Waiting Approved Delete Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($waitingApprovedDeleteEntries as $entry)
+                <tr>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <span class="badge badge-warning">Pending Approval</span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Approved Stock Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($approvedEntries as $entry)
+                <tr>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <span class="badge badge-success">Approved</span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Rejected Stock Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($rejectedEntries as $entry)
+                <tr>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <span class="badge badge-danger">Rejected</span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Completed Stock Entries</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($completedEntries as $entry)
+                <tr>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <span class="badge badge-info">Completed</span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 @endsection

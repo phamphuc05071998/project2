@@ -2,44 +2,116 @@
 @extends('layout')
 
 @section('content')
-    <div class="container">
-        <h1>Approve Stock Entries</h1>
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-        <table class="table table-bordered">
-            <thead>
+<div class="container">
+    <h1>Approve Stock Entries</h1>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <h2>Pending Approval for Edit</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Requested By</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($editEntries as $entry)
                 <tr>
-                    <th>Supplier</th>
-                    <th>Items</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->user->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <form action="{{ route('stock-entries.approve', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form action="{{ route('stock-entries.reject', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($stockEntries as $stockEntry)
-                    <tr>
-                        <td>{{ $stockEntry->supplier->name }}</td>
-                        <td>
-                            <ul>
-                                @foreach ($stockEntry->items as $item)
-                                    <li>{{ $item->item->name }} ({{ $item->quantity }})</li>
-                                @endforeach
-                            </ul>
-                        </td>
-                        <td>{{ ucfirst($stockEntry->status) }}</td>
-                        <td>
-                            <form action="{{ route('stock-entries.approveactions', ['stockEntry' => $stockEntry->id]) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('PUT')
-                                <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to approve this stock entry?')">Approve</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Pending Approval for Delete</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Requested By</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($deleteEntries as $entry)
+                <tr>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->user->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <form action="{{ route('stock-entries.approve', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form action="{{ route('stock-entries.reject', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>Pending Approval</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Supplier</th>
+                <th>Requested By</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($approveEntries as $entry)
+                <tr>
+                    <td>{{ $entry->id }}</td>
+                    <td>{{ $entry->supplier->name }}</td>
+                    <td>{{ $entry->user->name }}</td>
+                    <td>{{ $entry->status }}</td>
+                    <td>
+                        <form action="{{ route('stock-entries.confimRequestApproval', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-success">Approve</button>
+                        </form>
+                        <form action="{{ route('stock-entries.rejectRequestApproval', $entry->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 @endsection

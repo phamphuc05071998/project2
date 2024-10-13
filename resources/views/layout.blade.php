@@ -51,6 +51,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('stock-entries.statistics') }}">View Statistics</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('stock-entries.approveIndex') }}">Approve Stock Entries</a>
+                        </li>
                     @endif
                     @if (auth()->user()->hasRole('manager'))
                         <li class="nav-item">
@@ -66,7 +69,7 @@
                             <a class="nav-link" href="{{ route('stock-entries.statistics') }}">View Statistics</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('stock-entries.approve') }}">Approve Stock Entries</a>
+                            <a class="nav-link" href="{{ route('stock-entries.approveIndex') }}">Approve Stock Entries</a>
                         </li>
                     @endif
                     @if (auth()->user()->hasRole('employee'))
@@ -96,7 +99,7 @@
                 @if (!auth()->user()->hasRole('admin') && !auth()->user()->hasRole('manager') && !auth()->user()->hasRole('employee'))
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route(name: 'roleRequests.create') }}">Request Role Upgrade</a>
+                            <a class="nav-link" href="{{ route('roleRequests.create') }}">Request Role Upgrade</a>
                         </li>
                     </ul>
                 @endif

@@ -9,7 +9,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\StockEntryController;
 
 // Home route
-// Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // User authentication routes
 Route::get('/login', [UserController::class, 'showLoginForm'])->name('login');
@@ -36,25 +36,30 @@ Route::middleware(['auth', 'role:employee|manager|admin'])->group(function () {
     Route::get('/stock-entries/{stockEntry}/edit', [StockEntryController::class, 'edit'])->name('stock-entries.edit');
     Route::put('/stock-entries/{stockEntry}', [StockEntryController::class, 'update'])->name('stock-entries.update');
     Route::delete('/stock-entries/{stockEntry}', [StockEntryController::class, 'destroy'])->name('stock-entries.destroy');
+    Route::post('stock-entries/{id}/request-approval', [StockEntryController::class, 'requestApproval'])->name('stock-entries.requestApproval');
 });
 
 // Approval routes (accessible only by managers and admins)
 Route::middleware(['auth', 'role:manager|admin'])->group(function () {
-    Route::get('stock-entries/approve', [StockEntryController::class, 'approveIndex'])->name('stock-entries.approve');
-    Route::put('stock-entries/{stockEntry}/approve', [StockEntryController::class, 'approve'])->name('stock-entries.approveactions');
-    // Route::put('/stock-entries/{stockEntry}/approve-create', [StockEntryController::class, 'approveCreate'])->name('stock-entries.approve-create');
-    // Route::put('/stock-entries/{stockEntry}/approve-update', [StockEntryController::class, 'approveUpdate'])->name('stock-entries.approve-update');
-    // Route::put('/stock-entries/{stockEntry}/approve-delete', [StockEntryController::class, 'approveDelete'])->name('stock-entries.approve-delete');
+    Route::get('stock-entries/approve', [StockEntryController::class, 'approveIndex'])->name('stock-entries.approveIndex');
+    Route::post('stock-entries/{id}/confimRequestApproval', [StockEntryController::class, 'confimRequestApproval'])->name('stock-entries.confimRequestApproval');
+    Route::post('stock-entries/{id}/rejectRequestApproval', [StockEntryController::class, 'rejectRequestApproval'])->name('stock-entries.rejectRequestApproval');
+    Route::post('stock-entries/{stockEntry}/approve', [StockEntryController::class, 'approve'])->name('stock-entries.approve');
+    Route::post('stock-entries/{stockEntry}/reject', [StockEntryController::class, 'reject'])->name('stock-entries.reject');
+});
 
-    // Category routes
+// Category routes (accessible only by managers and admins)
+Route::middleware(['auth', 'role:manager|admin'])->group(function () {
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::get('/categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+});
 
-    // Supplier routes
+// Supplier routes (accessible only by managers and admins)
+Route::middleware(['auth', 'role:manager|admin'])->group(function () {
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
     Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
@@ -78,4 +83,7 @@ Route::middleware(['auth', 'role:manager|admin'])->group(function () {
     Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 });
 
-Route::get('/items-by-supplier/{supplierId}', [StockEntryController::class, 'getItemsBySupplier']);
+// Route to get items by supplier (accessible by all authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/items-by-supplier/{supplierId}', [StockEntryController::class, 'getItemsBySupplier']);
+});
